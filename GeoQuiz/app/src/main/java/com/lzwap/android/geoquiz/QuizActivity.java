@@ -2,6 +2,7 @@ package com.lzwap.android.geoquiz;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -10,6 +11,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class QuizActivity extends AppCompatActivity {
+
+    private static final String TAG = "QuizActivity";
+    private static final String KEY_INDEX = "index";
+    private static final String KEY_ANSWERED = "answered";
+    private static final String KEY_CORRECT = "correct";
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -27,11 +33,23 @@ public class QuizActivity extends AppCompatActivity {
     };
 
     private int mCurrentIndex = 0;
+    private int userAnswerCorrect = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate(Bundle) called");
         setContentView(R.layout.activity_quiz);
+
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+            boolean answerIsAnswered[] = savedInstanceState.getBooleanArray(KEY_ANSWERED);
+            for(int i = 0; i < mQuestionBank.length;i++)
+            {
+                mQuestionBank[i].setAnswered(answerIsAnswered[i]);
+            }
+            userAnswerCorrect = savedInstanceState.getInt(KEY_CORRECT);
+        }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
         mQuestionTextView.setOnClickListener(new View.OnClickListener() {
@@ -55,6 +73,7 @@ public class QuizActivity extends AppCompatActivity {
                 //toast.setGravity(Gravity.BOTTOM, 0, 0);
                 //toast.show();
                 checkAnswer(true);
+                showRecord();
             }
         });
 
@@ -69,6 +88,7 @@ public class QuizActivity extends AppCompatActivity {
                 //toast.setGravity(Gravity.TOP, 0, 0);
                 //toast.show();
                 checkAnswer(false);
+                showRecord();
             }
         });
 
@@ -89,15 +109,60 @@ public class QuizActivity extends AppCompatActivity {
                 //int question = mQuestionBank[mCurrentIndex].getTextResId();
                 //mQuestionTextView.setText(question);
                 updateQuestion();
+                showRecord();
             }
         });
 
         updateQuestion();
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart() called");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume() called");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause() called");
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.i(TAG, "onSaveInstanceState");
+        outState.putInt(KEY_INDEX, mCurrentIndex);
+        boolean answerIsAnswered[] = new boolean[mQuestionBank.length];
+        for (int i = 0; i < mQuestionBank.length; i++) {
+            answerIsAnswered[i] = mQuestionBank[i].isAnswered();
+        }
+        outState.putBooleanArray(KEY_ANSWERED, answerIsAnswered);
+        outState.putInt(KEY_CORRECT, userAnswerCorrect);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop() called");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy() called");
+    }
+
     private void updateQuestion() {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         mQuestionTextView.setText(question);
+        checkIfAnswered();
     }
 
     private void checkAnswer(boolean userPressedTrue) {
@@ -107,10 +172,48 @@ public class QuizActivity extends AppCompatActivity {
 
         if (userPressedTrue == answerIsTrue) {
             messageResId = R.string.correct_toast;
+            userAnswerCorrect++;
         } else {
             messageResId = R.string.incorrect_toast;
         }
+        mQuestionBank[mCurrentIndex].setAnswered(true);
+        checkIfAnswered();
 
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+    }
+
+    private void checkIfAnswered() {
+        boolean answerIsAnswered = mQuestionBank[mCurrentIndex].isAnswered();
+
+        if (answerIsAnswered) {
+            //如果题目被回答，则按键设置不可按下
+            mTrueButton.setEnabled(false);
+            mFalseButton.setEnabled(false);
+        } else {
+            //如果题目未被回答，则按键设置为可按
+            mTrueButton.setEnabled(true);
+            mFalseButton.setEnabled(true);
+        }
+    }
+
+    private void showRecord() {
+        boolean allAnswered = true;
+        String message = null;
+        double correctMark = 0;  //百分比形式的评分
+        //int correctAnswerNum = 0;  //答对的题目数量
+        for (int i = 0; i < mQuestionBank.length; i++) {
+            if (!mQuestionBank[i].isAnswered()) {
+                allAnswered = false;
+                break;
+            }
+        }
+
+        if (allAnswered == true) {
+            correctMark = (double)userAnswerCorrect/mQuestionBank.length;
+            //保留后两位
+            correctMark = (double)((int)(correctMark * 10000)/100.0);
+            message = "正确率" + String.valueOf(correctMark) + "%";
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        }
     }
 }
