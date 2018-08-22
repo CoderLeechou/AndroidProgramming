@@ -215,7 +215,6 @@ public class QuizActivity extends AppCompatActivity {
                 messageResId = R.string.incorrect_toast;
             }
         }
-        
         mQuestionBank[mCurrentIndex].setAnswered(true);
         checkIfAnswered();
 
