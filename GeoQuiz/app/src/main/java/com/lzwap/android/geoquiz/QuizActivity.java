@@ -21,6 +21,8 @@ public class QuizActivity extends AppCompatActivity {
     private static final String KEY_CORRECT = "correct";
     private static final int REQUEST_CODE_CHEAT = 0;
     private static final String CHEATER_MARK = "IsCheater";
+    private static final int NUM_OF_QUESTION = 6;
+    private boolean[] mIsCheater = new boolean[NUM_OF_QUESTION];
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -40,13 +42,18 @@ public class QuizActivity extends AppCompatActivity {
 
     private int mCurrentIndex = 0;
     private int userAnswerCorrect = 0;
-    private boolean mIsCheater;
+    //private boolean mIsCheater;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate(Bundle) called");
         setContentView(R.layout.activity_quiz);
+
+        //初始化mIsCheater[]
+        for (int i = 0; i < NUM_OF_QUESTION; i++) {
+            mIsCheater[i] = false;
+        }
 
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
@@ -56,7 +63,7 @@ public class QuizActivity extends AppCompatActivity {
                 mQuestionBank[i].setAnswered(answerIsAnswered[i]);
             }
             userAnswerCorrect = savedInstanceState.getInt(KEY_CORRECT);
-            mIsCheater = savedInstanceState.getBoolean(CHEATER_MARK);
+            mIsCheater = savedInstanceState.getBooleanArray(CHEATER_MARK);
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
@@ -116,7 +123,7 @@ public class QuizActivity extends AppCompatActivity {
                 mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
                 //int question = mQuestionBank[mCurrentIndex].getTextResId();
                 //mQuestionTextView.setText(question);
-                mIsCheater = false;
+                //mIsCheater = false;
                 updateQuestion();
                 showRecord();
             }
@@ -149,7 +156,7 @@ public class QuizActivity extends AppCompatActivity {
             if (data == null) {
                 return;
             }
-            mIsCheater = CheatActivity.wasAnswerShown(data);
+            mIsCheater[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
         }
     }
 
@@ -182,7 +189,7 @@ public class QuizActivity extends AppCompatActivity {
         }
         outState.putBooleanArray(KEY_ANSWERED, answerIsAnswered);
         outState.putInt(KEY_CORRECT, userAnswerCorrect);
-        outState.putBoolean(CHEATER_MARK, mIsCheater);
+        outState.putBooleanArray(CHEATER_MARK, mIsCheater);
     }
 
     @Override
@@ -208,7 +215,7 @@ public class QuizActivity extends AppCompatActivity {
 
         int messageResId = 0;
 
-        if (mIsCheater) {
+        if (mIsCheater[mCurrentIndex]) {
             messageResId = R.string.judgment_toast;
         } else {
             if (userPressedTrue == answerIsTrue) {
