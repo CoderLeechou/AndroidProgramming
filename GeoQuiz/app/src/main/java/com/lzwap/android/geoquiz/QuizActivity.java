@@ -23,6 +23,10 @@ public class QuizActivity extends AppCompatActivity {
     private static final String CHEATER_MARK = "IsCheater";
     private static final int NUM_OF_QUESTION = 6;
     private boolean[] mIsCheater = new boolean[NUM_OF_QUESTION];
+    private static final String EXTRA_CHEAT_CHANCE =
+            "com.lzwap.android.geoquiz.cheat_chance";
+
+    private static int mCheatChance = 3;
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -30,6 +34,7 @@ public class QuizActivity extends AppCompatActivity {
     private ImageButton mNextButton;
     private Button mCheatButton;
     private TextView mQuestionTextView;
+    private TextView mCheatChanceTextView;
 
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_australia, true),
@@ -138,10 +143,13 @@ public class QuizActivity extends AppCompatActivity {
                 boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
                 Intent intent = CheatActivity.newIntent(QuizActivity.this,
                         answerIsTrue);
+                intent.putExtra(EXTRA_CHEAT_CHANCE, mCheatChance);
                 //startActivity(intent);
                 startActivityForResult(intent, REQUEST_CODE_CHEAT);
             }
         });
+
+        mCheatChanceTextView = (TextView) findViewById(R.id.show_cheat_chance);
 
         updateQuestion();
     }
@@ -157,12 +165,19 @@ public class QuizActivity extends AppCompatActivity {
                 return;
             }
             mIsCheater[mCurrentIndex] = CheatActivity.wasAnswerShown(data);
+            mCheatChance = data.getIntExtra(EXTRA_CHEAT_CHANCE, 0);
         }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        if (mCheatChance == 0) {
+            mCheatButton.setEnabled(false);
+            mCheatChanceTextView.setText("no chance" + "times left");
+        } else {
+            mCheatChanceTextView.setText(mCheatChance + "time(s) left");
+        }
         Log.d(TAG, "onStart() called");
     }
 

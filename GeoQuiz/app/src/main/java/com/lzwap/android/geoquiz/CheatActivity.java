@@ -19,8 +19,12 @@ public class CheatActivity extends AppCompatActivity {
             "com.lzwap.android.geoquiz.answer_is_true";
     private static final String EXTRA_ANSWER_SHOWN =
             "com.lzwap.android.geoquiz.answer_shown";
+    private static final String EXTRA_CHEAT_CHANCE =
+            "com.lzwap.android.geoquiz.cheat_chance";
     private static final String QUESTION_SHOWN = "answer_shown";
     private static final String QUESTION_ANSWER = "question_answer";
+
+    private static int mCheatChance = 3;
 
     private boolean cheatedFlag ;
     private boolean mAnswerIsTrue;
@@ -62,6 +66,7 @@ public class CheatActivity extends AppCompatActivity {
         }
 
         //省略Intent intent = getIntent();
+        mCheatChance = getIntent().getIntExtra(EXTRA_CHEAT_CHANCE, 3);
         mAnswerIsTrue = getIntent().getBooleanExtra(EXTRA_ANSWER_IS_TRUE, false);
 
         mAnswerTextView = (TextView) findViewById(R.id.answer_text_view);
@@ -71,6 +76,7 @@ public class CheatActivity extends AppCompatActivity {
         mShowAnswerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mCheatChance--;
                 if (mAnswerIsTrue) {
                     mAnswerTextView.setText(R.string.true_button);
                     answerText = getResources().getString(R.string.true_button);
@@ -109,6 +115,7 @@ public class CheatActivity extends AppCompatActivity {
     private void setAnswerShownResult(boolean isAnswerShown) {
         Intent data = new Intent();
         data.putExtra(EXTRA_ANSWER_SHOWN, isAnswerShown);
+        data.putExtra(EXTRA_CHEAT_CHANCE, mCheatChance);
         setResult(RESULT_OK, data);
     }
 }

@@ -55,6 +55,11 @@
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/show_cheat_chance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""/>
 
 
 </LinearLayout>
