@@ -20,6 +20,7 @@ public class QuizActivity extends AppCompatActivity {
     private static final String KEY_ANSWERED = "answered";
     private static final String KEY_CORRECT = "correct";
     private static final int REQUEST_CODE_CHEAT = 0;
+    private static final String CHEATER_MARK = "IsCheater";
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -55,6 +56,7 @@ public class QuizActivity extends AppCompatActivity {
                 mQuestionBank[i].setAnswered(answerIsAnswered[i]);
             }
             userAnswerCorrect = savedInstanceState.getInt(KEY_CORRECT);
+            mIsCheater = savedInstanceState.getBoolean(CHEATER_MARK);
         }
 
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
@@ -180,6 +182,7 @@ public class QuizActivity extends AppCompatActivity {
         }
         outState.putBooleanArray(KEY_ANSWERED, answerIsAnswered);
         outState.putInt(KEY_CORRECT, userAnswerCorrect);
+        outState.putBoolean(CHEATER_MARK, mIsCheater);
     }
 
     @Override
