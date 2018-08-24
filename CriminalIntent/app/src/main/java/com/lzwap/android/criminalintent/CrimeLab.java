@@ -24,6 +24,12 @@ public class CrimeLab {
             Crime crime = new Crime();
             crime.setTitle("Crime #" + i);
             crime.setSolved(i % 2 == 0);
+            //第偶数个Crime设置为True
+            if (i % 2 == 0) {
+                crime.setRequiresPolice(true);
+            } else {
+                crime.setRequiresPolice(false);
+            }
             mCrimes.add(crime);
         }
     }
