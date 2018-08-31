@@ -26,6 +26,7 @@ public class CrimeListFragment extends Fragment {
     private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
 
     private RecyclerView mCrimeRecyclerView;
+    private TextView mTextView;
     private CrimeAdapter mAdapter;
 
     private boolean mSubtitleVisible;
@@ -45,6 +46,7 @@ public class CrimeListFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_crime_list, container, false);
         mCrimeRecyclerView = (RecyclerView) view.findViewById(R.id.crime_recycler_view);
+        mTextView = (TextView) view.findViewById(R.id.no_item);
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         if (savedInstanceState != null) {
@@ -107,6 +109,13 @@ public class CrimeListFragment extends Fragment {
         //String subtitle = getString(R.string.subtitle_format, crimeCount);
         String subtitle = getResources().getQuantityString(R.plurals.subtitle_plural, crimeCount,
                 crimeCount);
+        if (crimeCount != 0) {
+            mCrimeRecyclerView.setVisibility(View.VISIBLE);
+            mTextView.setVisibility(View.GONE);
+        } else {
+            mCrimeRecyclerView.setVisibility(View.GONE);
+            mTextView.setVisibility(View.VISIBLE);
+        }
 
         if (!mSubtitleVisible) {
             subtitle =null;
