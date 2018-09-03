@@ -54,8 +54,9 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //接收选项菜单方法回调
-        setHasOptionsMenu(true);
+        //接收选项菜单方法回调，暂时先屏蔽，因为涉及到数据库，并且删除逻辑还有一些问题
+        //setHasOptionsMenu(true);
+
         //mCrime = new Crime();
         //UUID crimeId = (UUID) getActivity().getIntent().getSerializableExtra(
         //        CrimeActivity.EXTRA_CRIME_ID);
@@ -112,6 +113,8 @@ public class CrimeFragment extends Fragment {
         });
 
         mTimeButton = (Button) v.findViewById(R.id.crime_time);
+        //使其不显示，因为API23以上才能用
+        mTimeButton.setVisibility(View.GONE);
         updateTime();
         mTimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
