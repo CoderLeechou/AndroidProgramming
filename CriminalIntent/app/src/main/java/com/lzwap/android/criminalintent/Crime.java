@@ -10,8 +10,16 @@ public class Crime {
     private Date mDate;
     private boolean mSolved;
 
+
     public Crime() {
-        mId = UUID.randomUUID();
+        this(UUID.randomUUID());
+//        mId = UUID.randomUUID();
+//        mDate = new Date();
+    }
+
+    //带UUID的构造方法
+    public Crime(UUID id) {
+        mId = id;
         mDate = new Date();
     }
 
