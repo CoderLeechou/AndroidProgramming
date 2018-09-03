@@ -55,7 +55,7 @@ public class CrimeFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //接收选项菜单方法回调，暂时先屏蔽，因为涉及到数据库，并且删除逻辑还有一些问题
-        //setHasOptionsMenu(true);
+        setHasOptionsMenu(true);
 
         //mCrime = new Crime();
         //UUID crimeId = (UUID) getActivity().getIntent().getSerializableExtra(
