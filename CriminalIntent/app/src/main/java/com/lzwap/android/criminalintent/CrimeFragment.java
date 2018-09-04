@@ -50,6 +50,7 @@ public class CrimeFragment extends Fragment {
     private UUID crimeId;
     private Button mSuspectButton;
     private Button mReportButton;
+    private Button mCallButton;
 
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -176,6 +177,16 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        mCallButton = (Button) v.findViewById(R.id.crime_call);
+        mCallButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                Uri number = Uri.parse("tel:" + mCrime.getPhone());
+                intent.setData(number);
+                startActivity(intent);
+            }
+        });
+
         if (mCrime.getSuspect() != null) {
             mSuspectButton.setText(mCrime.getSuspect());
         }
@@ -209,7 +220,8 @@ public class CrimeFragment extends Fragment {
             case REQUEST_CONTACT:
                 if (data != null) {
                     Uri contactUri = data.getData();
-                    String[] queryFields = new String[] {ContactsContract.Contacts.DISPLAY_NAME};
+                    String[] queryFields = new String[] {ContactsContract.Contacts.DISPLAY_NAME,
+                    ContactsContract.Contacts._ID};
                     Cursor c = getActivity().getContentResolver()
                             .query(contactUri, queryFields, null, null,
                                     null);
@@ -219,9 +231,22 @@ public class CrimeFragment extends Fragment {
                         }
                         c.moveToFirst();
                         String suspect = c.getString(0);
+                        String contactId = c.getString(1);
+                        Cursor phone = getActivity().getContentResolver().query(
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                null,
+                                ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " +
+                                contactId,
+                                null,
+                                null
+                        );
+                        if (phone.moveToNext()) {
+                            String mPhoneNumber = phone.getString(phone.getColumnIndex(
+                                    ContactsContract.CommonDataKinds.Phone.NUMBER));
+                            mCrime.setPhone(mPhoneNumber);
+                        }
                         mCrime.setSuspect(suspect);
                         mSuspectButton.setText(suspect);
-
                     } finally {
                         c.close();
                     }
