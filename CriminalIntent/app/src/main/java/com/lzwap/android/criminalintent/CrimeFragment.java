@@ -142,10 +142,12 @@ public class CrimeFragment extends Fragment {
                 i.setType("text/plain");
                 i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
                 i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
+                //创建一个选择器显示响应隐式intent的全部activity
+                i = Intent.createChooser(i, getString(R.string.send_report));
                 startActivity(i);
             }
         });
-        
+
         return v;
     }
 
