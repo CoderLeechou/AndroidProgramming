@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -144,20 +145,30 @@ public class CrimeFragment extends Fragment {
         mReportButton = (Button) v.findViewById(R.id.crime_report);
         mReportButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Intent i = new Intent(Intent.ACTION_SEND);
+//                Intent i = new Intent(Intent.ACTION_SEND);
+//                i.setType("text/plain");
+//                i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+//                i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
+//                //创建一个选择器显示响应隐式intent的全部activity
+//                i = Intent.createChooser(i, getString(R.string.send_report));
+//                startActivity(i);
+
+                //使用ShareCompat.IntentBuilder创建发送消息的Intent
+                ShareCompat.IntentBuilder i = ShareCompat.IntentBuilder.from(getActivity());
                 i.setType("text/plain");
-                i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
-                i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
-                //创建一个选择器显示响应隐式intent的全部activity
-                i = Intent.createChooser(i, getString(R.string.send_report));
-                startActivity(i);
+                i.setText(getCrimeReport());
+                i.setSubject(getString(R.string.crime_report_subject));
+                //i.createChooserIntent();  //这一句貌似没有也可以
+                //指定选择器标题
+                i.setChooserTitle(getString(R.string.send_report));
+                i.startChooser();
             }
         });
 
         final Intent pickContact = new Intent(Intent.ACTION_PICK,
                 ContactsContract.Contacts.CONTENT_URI);
         //过滤器验证代码，指定一个无用类别，阻止联系人应用和intent匹配
-        pickContact.addCategory(Intent.CATEGORY_HOME);
+        //pickContact.addCategory(Intent.CATEGORY_HOME);
         mSuspectButton = (Button) v.findViewById(R.id.crime_suspect);
         mSuspectButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
