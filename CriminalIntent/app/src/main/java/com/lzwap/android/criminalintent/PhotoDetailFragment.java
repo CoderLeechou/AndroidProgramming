@@ -3,6 +3,7 @@ package com.lzwap.android.criminalintent;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -37,7 +38,9 @@ public class PhotoDetailFragment extends DialogFragment {
         View v = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_photo, null);
         mPhotoView = (ImageView) v.findViewById(R.id.crime_photo_detail);
 
+        //在真机上下面两种方式有区别，应该与拍摄照片像素有关
         Bitmap bitmap = PictureUtils.getScaledBitmap(file.getPath(), getActivity());
+        //Bitmap bitmap = BitmapFactory.decodeFile(file.getPath());
         mPhotoView.setImageBitmap(bitmap);
 
         return new AlertDialog.Builder(getActivity())
