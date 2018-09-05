@@ -3,15 +3,18 @@ package com.lzwap.android.criminalintent;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ShareCompat;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -25,9 +28,13 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
+import java.io.File;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static android.widget.CompoundButton.*;
@@ -41,8 +48,10 @@ public class CrimeFragment extends Fragment {
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
+    private static final int REQUEST_PHOTO = 3;
 
     private Crime mCrime;
+    private File mPhotoFile;
     private EditText mTitleField;
     private Button mDateButton;
     private Button mTimeButton;
@@ -51,6 +60,8 @@ public class CrimeFragment extends Fragment {
     private Button mSuspectButton;
     private Button mReportButton;
     private Button mCallButton;
+    private ImageButton mPhotoButton;
+    private ImageView mPhotoView;
 
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -72,6 +83,7 @@ public class CrimeFragment extends Fragment {
         //        CrimeActivity.EXTRA_CRIME_ID);
         crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
+        mPhotoFile = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
     }
 
     @Override
@@ -197,6 +209,37 @@ public class CrimeFragment extends Fragment {
             mSuspectButton.setEnabled(false);
         }
 
+        mPhotoButton = (ImageButton) v.findViewById(R.id.crime_camera);
+        final Intent captureImage = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // 检查是否存在相机应用
+        boolean canTakePhoto = mPhotoFile != null &&
+                captureImage.resolveActivity(packageManager) !=null;
+        mPhotoButton.setEnabled(canTakePhoto);
+        mPhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 把本地文件路径转换为相机能看见的Uri形式
+                Uri uri = FileProvider.getUriForFile(getActivity(),
+                        "com.lzwap.android.criminalintent.fileprovider", mPhotoFile);
+                // 使用指定的文件路径来存储全尺寸照片。
+                // 因为默认只能拍摄低分辨率的缩略图，且存在返回的Intent中
+                captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+
+                List<ResolveInfo> cameraActivities = getActivity().getPackageManager()
+                        .queryIntentActivities(captureImage, PackageManager.MATCH_DEFAULT_ONLY);
+
+                // 要实际写入文件，需要给相机应用权限。
+                // 前提是AndroidManifest中已经给FileProvider添加过android:grantUriPermissions="true"属性
+                for (ResolveInfo activity : cameraActivities) {
+                    getActivity().grantUriPermission(activity.activityInfo.packageName,
+                            uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                }
+                startActivityForResult(captureImage,REQUEST_PHOTO);
+            }
+        });
+
+        mPhotoView = (ImageView) v.findViewById(R.id.crime_photo);
+
         return v;
     }
 
@@ -222,6 +265,7 @@ public class CrimeFragment extends Fragment {
                     Uri contactUri = data.getData();
                     String[] queryFields = new String[] {ContactsContract.Contacts.DISPLAY_NAME,
                     ContactsContract.Contacts._ID};
+                    //ContentProvider,ContentResolver.
                     Cursor c = getActivity().getContentResolver()
                             .query(contactUri, queryFields, null, null,
                                     null);
