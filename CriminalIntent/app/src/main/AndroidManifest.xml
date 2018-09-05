@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lzwap.android.criminalintent">
 
+    <!--声明应用要使用相机，由于程序已resolveActivity()已经判断是否支持拍照。
+    因此此次设置为不需要设备一定要有相机 -->
+    <uses-feature android:name="android.hardware.camera"
+        android:required="false"/>
+
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <application
         android:allowBackup="true"

@@ -45,11 +45,13 @@ public class CrimeFragment extends Fragment {
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
     private static final String DIALOG_TIME = "DialogTime";
+    private static final String DIALOG_PHOTO = "DailogPhoto";
 
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
     private static final int REQUEST_PHOTO = 3;
+    private static final int REQUEST_PHOTO_FULL =4;
 
     private Crime mCrime;
     private File mPhotoFile;
@@ -240,6 +242,19 @@ public class CrimeFragment extends Fragment {
         });
 
         mPhotoView = (ImageView) v.findViewById(R.id.crime_photo);
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mPhotoFile == null || !mPhotoFile.exists()) {
+                    mPhotoView.setImageDrawable(null);
+                } else {
+                    FragmentManager manager = getFragmentManager();
+                    PhotoDetailFragment dialog = PhotoDetailFragment.newInstance(mPhotoFile);
+                    dialog.setTargetFragment(CrimeFragment.this, REQUEST_PHOTO_FULL);
+                    dialog.show(manager, DIALOG_PHOTO);
+                }
+            }
+        });
         updatePhotoView();
 
         return v;
@@ -300,6 +315,7 @@ public class CrimeFragment extends Fragment {
             case REQUEST_PHOTO:
                 Uri uri = FileProvider.getUriForFile(getActivity(),
                         "com.lzwap.android.criminalintent.fileprovider", mPhotoFile);
+                //照片已保存，关闭文件访问权限
                 getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                 updatePhotoView();
             default:
