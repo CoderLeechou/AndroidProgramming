@@ -1,6 +1,7 @@
 package com.lzwap.android.criminalintent;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -67,6 +68,11 @@ public class CrimeFragment extends Fragment {
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
     private ViewTreeObserver mPhotoObserver;
+    private Callbacks mCallbacks;
+
+    public interface Callbacks {
+        void onCrimeUpdated(Crime crime);
+    }
 
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -75,6 +81,12 @@ public class CrimeFragment extends Fragment {
         CrimeFragment fragment = new CrimeFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
     }
 
     @Override
@@ -98,6 +110,12 @@ public class CrimeFragment extends Fragment {
         CrimeLab.get(getActivity()).updateCrime(mCrime);
     }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -115,6 +133,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 mCrime.setTitle(charSequence.toString());
+                updateCrime();
             }
 
             @Override
@@ -143,6 +162,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 mCrime.setSolved(b);
+                updateCrime();
             }
         });
 
@@ -279,11 +299,13 @@ public class CrimeFragment extends Fragment {
             case REQUEST_DATE:
                 Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
                 mCrime.setDate(date);
+                updateCrime();
                 updateDate();
                 break;
             case REQUEST_TIME:
                 Date date1 = (Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
                 mCrime.setDate(date1);
+                updateCrime();
                 updateTime();
                 break;
             case REQUEST_CONTACT:
@@ -314,8 +336,10 @@ public class CrimeFragment extends Fragment {
                             String mPhoneNumber = phone.getString(phone.getColumnIndex(
                                     ContactsContract.CommonDataKinds.Phone.NUMBER));
                             mCrime.setPhone(mPhoneNumber);
+                            updateCrime();
                         }
                         mCrime.setSuspect(suspect);
+                        updateCrime();
                         mSuspectButton.setText(suspect);
                     } finally {
                         c.close();
@@ -326,10 +350,16 @@ public class CrimeFragment extends Fragment {
                         "com.lzwap.android.criminalintent.fileprovider", mPhotoFile);
                 //照片已保存，关闭文件访问权限
                 getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                updateCrime();
                 updatePhotoView(mPhotoView.getWidth(), mPhotoView.getHeight());
             default:
                 break;
         }
+    }
+
+    private void updateCrime() {
+        CrimeLab.get(getActivity()).updateCrime(mCrime);
+        mCallbacks.onCrimeUpdated(mCrime);
     }
 
     private void updateDate() {
