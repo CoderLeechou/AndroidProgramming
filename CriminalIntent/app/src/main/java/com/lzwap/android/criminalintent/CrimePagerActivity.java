@@ -121,6 +121,16 @@ public class CrimePagerActivity extends AppCompatActivity
 
     }
 
+    @Override
+    public void onCrimeDeleted(Crime crime) {
+        finish();
+    }
+
+    @Override
+    public void onCrimeAllDeleted(Crime crime) {
+        finish();
+    }
+
     private void setButtonView(int position) {
         if (position == 0){
             mJumpToFirst.setVisibility(View.INVISIBLE);

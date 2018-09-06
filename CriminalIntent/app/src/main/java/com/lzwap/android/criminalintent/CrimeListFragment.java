@@ -155,10 +155,10 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter(crimes);
             mCrimeRecyclerView.setAdapter(mAdapter);
         } else {
-            //mAdapter.notifyDataSetChanged();
             mAdapter.setCrimes(crimes);
-            //实现高效的RecyclerView刷新
-            mAdapter.notifyItemChanged(itemPosition);
+            //实现高效的RecyclerView刷新，为了平板显示，不能用这种
+            //mAdapter.notifyItemChanged(itemPosition);
+            mAdapter.notifyDataSetChanged();
         }
         updateSubtitle();
     }
