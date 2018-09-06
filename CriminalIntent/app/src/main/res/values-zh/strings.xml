@@ -18,6 +18,7 @@
         <item quantity="one">%1$d 陋习</item>
         <item quantity="other">%1$d 陋习</item>
     </plurals>
+    <string name="no_item">等待您添加陋习！</string>
     <string name="crime_suspect_text">选择嫌疑人</string>
     <string name="crime_report_text">抗议或投诉</string>
     <string name="crime_call_text">呼叫嫌疑人</string>
