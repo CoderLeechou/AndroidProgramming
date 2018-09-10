@@ -27,6 +27,9 @@ public class BeatBoxFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //保留fragment，应对旋转保存音频播放数据
+        //因为可以销毁和重建fragment的视图，但其自身可以不被销毁
+        setRetainInstance(true);
 
         mBeatBox = new BeatBox(getActivity());
     }
