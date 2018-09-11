@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,6 +16,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Collections;
@@ -65,17 +67,22 @@ public class LzwLauncherFragment extends Fragment {
             implements View.OnClickListener {
         private ResolveInfo mResolveInfo;
         private TextView mNameTextView;
+        private ImageView mIconImageView;
 
-        public ActivityHolder(View itemView) {
-            super(itemView);
-            mNameTextView = (TextView) itemView;
-            mNameTextView.setOnClickListener(this);
+        public ActivityHolder(LayoutInflater inflater, ViewGroup parent) {
+            super(inflater.inflate(R.layout.list_item_activity, parent, false));
+            itemView.setOnClickListener(this);
+            mNameTextView = (TextView) itemView.findViewById(R.id.app_name);
+            mIconImageView = (ImageView) itemView.findViewById(R.id.app_icon);
+            //mNameTextView.setOnClickListener(this);
         }
 
         public void bindActivity(ResolveInfo resolveInfo) {
             mResolveInfo = resolveInfo;
             PackageManager pm = getActivity().getPackageManager();
             String appName = mResolveInfo.loadLabel(pm).toString();
+            Drawable appIcon = mResolveInfo.loadIcon(pm);
+            mIconImageView.setImageDrawable(appIcon);
             mNameTextView.setText(appName);
         }
 
@@ -103,9 +110,9 @@ public class LzwLauncherFragment extends Fragment {
         @Override
         public ActivityHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            View view = layoutInflater
-                    .inflate(android.R.layout.simple_list_item_1, viewGroup, false);
-            return new ActivityHolder(view);
+            //View view = layoutInflater
+            // .inflate(android.R.layout.simple_list_item_1, viewGroup, false);
+            return new ActivityHolder(layoutInflater, viewGroup);
         }
 
         @Override
