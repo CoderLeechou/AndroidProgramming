@@ -3,6 +3,9 @@ package com.lzwap.android.photogallery;
 import android.net.Uri;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,36 +67,47 @@ public class FlickrFetchr {
                     .build().toString();
             String jsonString = getUrlString(url);
             Log.i(TAG, "Received JSON: " + jsonString);
-            JSONObject jsonBody = new JSONObject(jsonString);
-            parseItems(items, jsonBody);
+            //JSONObject jsonBody = new JSONObject(jsonString);
+            //parseItems(items, jsonBody);
+            parseItems(items, jsonString);
         } catch (IOException ioe) {
             Log.e(TAG, "Failed to fetch items", ioe);
-        } catch (JSONException je) {
+        } catch (JsonSyntaxException je) {
             Log.e(TAG, "Failed to parse JSON", je);
         }
+        //catch (JSONException je) {
+            //Log.e(TAG, "Failed to parse JSON", je);
+        //}
 
         return items;
     }
 
     //解析JSON数据
-    private void parseItems(List<GalleryItem> items, JSONObject jsonBody)
-        throws IOException, JSONException {
-        JSONObject photosJsonObject = jsonBody.getJSONObject("photos");
-        JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
+//    private void parseItems(List<GalleryItem> items, JSONObject jsonBody)
+//        throws IOException, JSONException {
+//        JSONObject photosJsonObject = jsonBody.getJSONObject("photos");
+//        JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
+//
+//        for (int i = 0; i < photoJsonArray.length(); i++) {
+//            JSONObject photoJsonObject = photoJsonArray.getJSONObject(i);
+//
+//            GalleryItem item = new GalleryItem();
+//            item.setId(photoJsonObject.getString("id"));
+//            item.setCaption(photoJsonObject.getString("title"));
+//
+//            if (!photoJsonObject.has("url_s")) {
+//                continue;
+//            }
+//
+//            item.setUrl(photoJsonObject.getString("url_s"));
+//            items.add(item);
+//        }
+//    }
 
-        for (int i = 0; i < photoJsonArray.length(); i++) {
-            JSONObject photoJsonObject = photoJsonArray.getJSONObject(i);
-
-            GalleryItem item = new GalleryItem();
-            item.setId(photoJsonObject.getString("id"));
-            item.setCaption(photoJsonObject.getString("title"));
-
-            if (!photoJsonObject.has("url_s")) {
-                continue;
-            }
-
-            item.setUrl(photoJsonObject.getString("url_s"));
-            items.add(item);
-        }
+    //使用Gson解析Json数据
+    private void parseItems(List<GalleryItem> items, String jsonString)
+        throws IOException, JsonSyntaxException {
+        PhotoBean photoBean = (PhotoBean) new Gson().fromJson(jsonString, PhotoBean.class);
+        items.addAll(photoBean.getPhotoInfo().getPhoto());
     }
 }
