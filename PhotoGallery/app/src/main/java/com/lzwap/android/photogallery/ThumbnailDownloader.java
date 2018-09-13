@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
+import android.util.LruCache;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,9 +19,10 @@ public class ThumbnailDownloader<T> extends HandlerThread {
 
     private boolean mHasQuit = false;
     private Handler mRequestHandler;
-    private ConcurrentMap<T,String> mRequestMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<T, String> mRequestMap = new ConcurrentHashMap<>();
     private Handler mResponseHandler;
     private ThumbnailDownloadListener<T> mThumbnailDownloadListener;
+    private LruCache<String, Bitmap> mCache;
 
     public interface ThumbnailDownloadListener<T> {
         void onThumbnailDownloaded(T target, Bitmap thumbnail);
@@ -47,6 +49,8 @@ public class ThumbnailDownloader<T> extends HandlerThread {
                 }
             }
         };
+        int macCacheSize = 4 * 1024 * 1024;  //4MB
+        mCache = new LruCache<>(macCacheSize);
     }
 
     @Override
@@ -79,10 +83,20 @@ public class ThumbnailDownloader<T> extends HandlerThread {
                 return;
             }
 
-            byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
-            final Bitmap bitmap = BitmapFactory
-                    .decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
-            Log.i(TAG, "Bitmap created");
+//            byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
+//            final Bitmap bitmap = BitmapFactory
+//                    .decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+//            Log.i(TAG, "Bitmap created");
+            final Bitmap bitmap;
+            if (mCache.get(url) == null) {
+                byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
+                bitmap = BitmapFactory
+                        .decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+                Log.i(TAG, "Bitmap created");
+            } else {
+                bitmap = mCache.get(url);
+                Log.i(TAG, "Bitmap from cache");
+            }
             mResponseHandler.post(new Runnable() {
                 @Override
                 public void run() {
