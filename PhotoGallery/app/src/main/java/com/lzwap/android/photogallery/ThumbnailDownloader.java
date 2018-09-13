@@ -16,6 +16,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     private static final String TAG = "ThumbnailDownloader";
 
     private static final int MESSAGE_DOWNLOAD = 0;
+    private static final int MESSAGE_PRELOAD = 1;
 
     private boolean mHasQuit = false;
     private Handler mRequestHandler;
@@ -46,6 +47,10 @@ public class ThumbnailDownloader<T> extends HandlerThread {
                     T target = (T) msg.obj;
                     Log.i(TAG, "Got a request for URL: " + mRequestMap.get(target));
                     handleRequest(target);
+                } else if (msg.what == MESSAGE_PRELOAD) {
+                    String urlToPreload = (String) msg.obj;
+                    Log.i(TAG, "Preload URL: " + urlToPreload);
+                    handlePreload(urlToPreload);
                 }
             }
         };
@@ -70,8 +75,14 @@ public class ThumbnailDownloader<T> extends HandlerThread {
         }
     }
 
+    public void queuePreloadThumbnail(String url) {
+        Log.i(TAG, "queuePreloadThumbnail: Got a URL: " + url);
+        mRequestHandler.obtainMessage(MESSAGE_PRELOAD, url).sendToTarget();
+    }
+
     public void clearQueue() {
         mRequestHandler.removeMessages(MESSAGE_DOWNLOAD);
+        mRequestHandler.removeMessages(MESSAGE_PRELOAD);
         mRequestMap.clear();
     }
 
@@ -109,6 +120,26 @@ public class ThumbnailDownloader<T> extends HandlerThread {
             });
         } catch (IOException ioe) {
             Log.e(TAG, "Error downloading image", ioe);
+        }
+    }
+
+    private void handlePreload(String url) {
+        try {
+            if (url == null) {
+                return;
+            }
+
+            if (mCache.get(url) == null) {
+                byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
+                Bitmap bitmap = BitmapFactory
+                        .decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+                mCache.put(url, bitmap);
+                Log.i(TAG, "Preload bitmap has been put in cache");
+            } else {
+                Log.i(TAG, "Preload bitmap  in cache");
+            }
+        } catch (IOException  ioe) {
+            Log.e(TAG, "Error preloading image", ioe);
         }
     }
 }
