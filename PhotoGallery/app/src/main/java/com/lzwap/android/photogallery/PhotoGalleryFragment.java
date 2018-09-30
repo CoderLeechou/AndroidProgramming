@@ -196,7 +196,12 @@ public class PhotoGalleryFragment extends Fragment {
 //            } catch (IOException ioe) {
 //                Log.e(TAG, "Failed to fetch URL: ", ioe);
 //            }
-            return new FlickrFetchr().fetchItems(voids[0]);
+            String query = "robot";  //测试
+            if (query == null) {
+                return new FlickrFetchr().fetchRecentPhotos(voids[0]);
+            } else {
+                return new FlickrFetchr().searchPhotos(query, voids[0]);
+            }
         }
 
         @Override
