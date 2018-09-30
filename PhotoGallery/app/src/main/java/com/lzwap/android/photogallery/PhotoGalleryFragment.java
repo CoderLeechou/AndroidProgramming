@@ -126,6 +126,7 @@ public class PhotoGalleryFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 Log.d(TAG, "QueryTextSubmit: " + s);
+                QueryPreference.setStoredQuery(getActivity(), s);
                 mNextPage = 1;
                 updateItems(mNextPage);
                 return true;
@@ -139,15 +140,32 @@ public class PhotoGalleryFragment extends Fragment {
         });
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_clear:
+                QueryPreference.setStoredQuery(getActivity(), null);
+                mThumbnailDownloader.clearQueue();
+                mNextPage = 1;
+                updateItems(mNextPage);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void updateItems(int page) {
-        mFetchItemsTask = new FetchItemsTask();
+        String query = QueryPreference.getStoredQuery(getActivity());
+        //给mFetchItemsTask初始化，getViewTreeObserver()需要用到
+        mFetchItemsTask = new FetchItemsTask(query);
         mFetchItemsTask.execute(page);
     }
 
     private void setupAdapter() {
         if (isAdded()) {
             //mPhotoRecyclerView.setAdapter(new PhotoAdapter(mItems));
-            if (mPhotoAdapter == null) {
+            //刷新搜索结果
+            if (mNextPage == 1) {
                 mPhotoAdapter = new PhotoAdapter(mItems);
                 mPhotoRecyclerView.setAdapter(mPhotoAdapter);
                 mPhotoRecyclerView.addOnScrollListener(onButtomListener);
@@ -221,6 +239,11 @@ public class PhotoGalleryFragment extends Fragment {
     }
 
     private class FetchItemsTask extends AsyncTask<Integer, Void, List<GalleryItem>> {
+        private String mQuery;
+
+        public FetchItemsTask(String query) {
+            mQuery= query;
+        }
         @Override
         protected List<GalleryItem> doInBackground(Integer... voids) {
 //            try {
@@ -230,11 +253,11 @@ public class PhotoGalleryFragment extends Fragment {
 //            } catch (IOException ioe) {
 //                Log.e(TAG, "Failed to fetch URL: ", ioe);
 //            }
-            String query = "robot";  //测试
-            if (query == null) {
+            //String query = "robot";  //测试
+            if (mQuery == null) {
                 return new FlickrFetchr().fetchRecentPhotos(voids[0]);
             } else {
-                return new FlickrFetchr().searchPhotos(query, voids[0]);
+                return new FlickrFetchr().searchPhotos(mQuery, voids[0]);
             }
         }
 
@@ -262,8 +285,7 @@ public class PhotoGalleryFragment extends Fragment {
                             mNextPage++;
                             if (mNextPage <= MAX_PAGES) {
                                 Toast.makeText(getActivity(), "waiting to load ……", Toast.LENGTH_SHORT).show();
-                                mFetchItemsTask = new FetchItemsTask();
-                                mFetchItemsTask.execute(mNextPage);
+                                updateItems(mNextPage);
                             } else {
                                 Toast.makeText(getActivity(), "This is the end!", Toast.LENGTH_SHORT).show();
                             }
