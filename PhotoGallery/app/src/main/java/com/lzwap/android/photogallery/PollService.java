@@ -24,7 +24,8 @@ public class PollService extends IntentService {
         return new Intent(context, PollService.class);
     }
 
-    //添加定时方法
+    //添加定时方法(如果设备处于睡眠模式（黑屏状态），即使间隔时间已过，定时方法也不会触发)
+    //除非让定时器强制唤醒设备
     public static void setServiceAlarm(Context context, boolean isOn) {
         Intent i = PollService.newIntent(context);
         PendingIntent pi = PendingIntent.getService(context, 0, i, 0);
@@ -39,6 +40,14 @@ public class PollService extends IntentService {
             alarmManager.cancel(pi);
             pi.cancel();
         }
+    }
+
+    //判断定时器的启动状态
+    public static boolean isServiceAlarmOn(Context context) {
+        Intent i = PollService.newIntent(context);
+        PendingIntent pi = PendingIntent
+                .getService(context, 0 , i, PendingIntent.FLAG_NO_CREATE);
+        return pi != null;
     }
 
     public PollService() {
