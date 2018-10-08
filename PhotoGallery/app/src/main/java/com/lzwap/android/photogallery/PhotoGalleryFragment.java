@@ -59,8 +59,10 @@ public class PhotoGalleryFragment extends Fragment {
         updateItems(1);
 
         //服务启动
-        Intent i = PollService.newIntent(getActivity());
-        getActivity().startService(i);
+//        Intent i = PollService.newIntent(getActivity());
+//        getActivity().startService(i);
+        //启动定时器
+        PollService.setServiceAlarm(getActivity(), true);
 
         Handler responseHandler = new Handler();
         mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
