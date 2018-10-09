@@ -62,7 +62,7 @@ public class PhotoGalleryFragment extends Fragment {
 //        Intent i = PollService.newIntent(getActivity());
 //        getActivity().startService(i);
         //启动定时器
-        PollService.setServiceAlarm(getActivity(), true);
+        //PollService.setServiceAlarm(getActivity(), true);
 
         Handler responseHandler = new Handler();
         mThumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
@@ -164,6 +164,13 @@ public class PhotoGalleryFragment extends Fragment {
                 searchView.setQuery(query, false);
             }
         });
+
+        MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
+        if (PollService.isServiceAlarmOn(getActivity())) {
+            toggleItem.setTitle(R.string.stop_polling);
+        } else {
+            toggleItem.setTitle(R.string.start_polling);
+        }
     }
 
     @Override
@@ -174,6 +181,12 @@ public class PhotoGalleryFragment extends Fragment {
                 mThumbnailDownloader.clearQueue();
                 mNextPage = 1;
                 updateItems(mNextPage);
+                return true;
+            case R.id.menu_item_toggle_polling:
+                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+                //让当前选项菜单失效，从而能刷新菜单选项显示
+                getActivity().invalidateOptionsMenu();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
